@@ -1,4 +1,6 @@
 public interface Talk {
-    void startTalk();
 
+    void startConversation();
+    void conversation();
+    void endConversation();
 }

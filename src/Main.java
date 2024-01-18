@@ -1,11 +1,15 @@
-import java.sql.SQLOutput;
+
 import java.util.*;
 
 public class Main {
 
+
     public static void main(String[] args) {
 
         Scanner scanner = new Scanner(System.in);
+
+        boolean npc1Done = false;
+        boolean npc2Done = false;
 
         Room bedroom1 = new Room("Small bedroom", "Bedroom with own toilet.");
         Room toilet = new Room("Toilet", "Little, smelly toilet");
@@ -16,7 +20,7 @@ public class Main {
         Room kitchen = new Room("Kitchen", "It's full of food leftovers...");
         Room exit = new Room("Exit", "Finally you can get some fresh air!");
 
-        Item breathalyser = new Item("breathalyser", "Check % in your blood");
+        Item breathalyser = new Item("breathalyser", "You can now check % in your blood");
         Item money = new Item("money", "Lovely money!");
         Item phone = new Item("mobile phone", "Your lost phone, now you can call TAXI!");
         Item drivingLicense = new Item("driving license", "It belongs to you! You can back by car now!");
@@ -28,11 +32,10 @@ public class Main {
         Item chineseSoup = new Item("chinese soup", "Great for regeneration!");
         Item electrolytes = new Item("bottle of electrolytes", "for sure it helps!");
 
-        NPC1 npc1 = new NPC1("ktos", "super ktos");
-
-        Character NPC2 = new Character("Plodder", "He looks smart...but he is drunk");
-        Character NPC3 = new Character("Gambler", "Funny, tricky guy");
-        Character NPC4 = new Character("Cat girl", "She is looking for something...");
+        Character npc1 = new NPC1("Stranger", "Why is he in bed with you...?");
+        Character npc2 = new NPC2("Plodder", "He looks smart...but he is drunk");
+        Character npc3 = new NPC3("Gambler", "Funny, tricky guy");
+        Character npc4 = new NPC4("Cat girl", "She is looking for something...");
 
         bedroom1.addExit("north", toilet);
         bedroom1.addExit("east", hall);
@@ -42,7 +45,7 @@ public class Main {
         toilet.addExit("south", bedroom1);
         toilet.addItem(vodka, 1);
         toilet.addItem(key1, 1);
-        toilet.addCharacter(NPC2);
+        toilet.addCharacter(npc2);
 
 
         hall.addExit("north", bathroom);
@@ -55,7 +58,7 @@ public class Main {
 
         bedroom2.addExit("north", hall);
         bedroom2.addItem(drivingLicense, 1);
-        bedroom2.addCharacter(NPC3);
+        bedroom2.addCharacter(npc3);
 
         bathroom.addExit("south", hall);
         bathroom.addItem(firstAidKit, 1);
@@ -70,7 +73,9 @@ public class Main {
         kitchen.addExit("south", livingRoom);
         kitchen.addItem(key2, 1);
         kitchen.addItem(chineseSoup, 1);
-        kitchen.addCharacter(NPC4);
+        kitchen.addCharacter(npc4);
+
+        bedroom1.getNextRoom("east").roomIsLocked = true;
 
 
         System.out.println("Hello, what's your name?");
@@ -87,20 +92,29 @@ public class Main {
         System.out.println("You got big headache and don't remember what happened last night...");
         System.out.println("Your backpack is on the ground, but it's empty!");
 
-        player.talkTo(npc1);
-        player.talkTo(NPC2);
-
 
 
 
         while (true) {
 
+            if (!npc1Done && npc1.talkedTo && !player.getBackpack().getItemsInBackpack().containsKey(breathalyser)) {
+                player.putInBackpack(breathalyser, 1);
+                npc1Done = true;
+            }
+            if (!npc2Done && npc2.talkedTo && !player.getBackpack().getItemsInBackpack().containsKey(key1)) {
+                player.putInBackpack(key1, 1);
+                npc2Done = true;
+            }
+
             System.out.println("What do you want to do?");
             String command = getPlayerInput(scanner);
             useCommand(command, player);
-
         }
+
     }
+
+
+
     private static String getPlayerInput(Scanner scanner){
         System.out.println(">");
         String command = scanner.nextLine();
@@ -118,46 +132,79 @@ public class Main {
             // Komenda poruszania się
             if (splitted[0].equals("go") && splitted.length >= 2) {
                 player.move(splitted[1]);
-            } //Komenda sprawdzania zawartości plecaka i stanu upojenia
-            else if (splitted[0].equals("check") && splitted[1].equals("backpack") || splitted[1].equals("%")) {
-                if(splitted[1].equals("backpack")) {
-                    player.showBackpack();
+                // komenda dzwonienia po taxi
+            } else if(splitted[0].equals("call") && splitted[1].equals("taxi")){
+                if (player.getBackpack().getItemsInBackpack().containsKey(??????????????? phone) {
+                    if (player.getBackpack().getItemsInBackpack().containsKey(?????? money) && player.getBackpack().getItemsInBackpack().get(????? money) >= 30){
+                        System.out.println("You called a taxi... Your taxi will arrive in 5 minutes!");
+                        System.out.println("Congratulations! You have finished the game!");
+                    } else {
+                        System.out.println("You don't have enough money to call a taxi! It will cost 30$.");
+                    }
                 } else {
-                    player.getDrunkLevel();
+                    System.out.println("You don't have any mobile phone to do that!");
                 }
-            } //Komenda opisu aktualnego pomieszczenia
+            }
+            //Komenda sprawdzania zawartości plecaka i stanu upojenia
+            else if (splitted[0].equals("check") && splitted[1].equals("backpack")) {
+                player.showBackpack();
+            }
+             //Komenda opisu aktualnego pomieszczenia
             else if(splitted[0].equals("get") && splitted[1].equals("description")){
                 player.getCurrentRoomDescription();
+            }//Komenda rozmawiania z postaciami
+            else if(splitted[0].equals("talk") && splitted[1].equals("to")){
+                String npcName = splitted[2];
+
+                for (Character npc : player.getCurrentRoom().getNPCs()) {
+                    if (npc.getName().equalsIgnoreCase(npcName)) {
+                        player.talkTo(npc);
+                        return;
+                    }
+                } System.out.println("There is no NPC named '" + npcName + "' in this room.");
+
             }
             //komenda dodawania przedmiotów do plecaka
             else if (splitted[0].equals("add") && splitted.length <= 5) {
-                try {
                     if (splitted.length == 3) {
-
-                        int quantity = Integer.parseInt(splitted[2]);
-
-                        if (quantity > 0) {
-                            String itemName = splitted[1];
-                            Item itemToAdd = null;
-
-                            for (Item item : player.getCurrentRoom().getItemsInRoom().keySet()) {
-                                if (item.getName().trim().equalsIgnoreCase(itemName)) {
-                                    itemToAdd = item;
-                                    break;
-                                }
-                            }
-                            if (itemToAdd != null) {
-                                player.putInBackpack(itemToAdd, quantity);
-                            } else {
-                                System.out.println("No item here!");
-                            }
+                        if(splitted[1].equals("breathalyser") || splitted[1].equals("key")) {
+                            System.out.println("You can't take it! You should speak to someone first! ");
                         } else {
-                            System.out.println("Quantity must be grater than 0!");
+                            int quantity = 0;
+                            try {
+                                quantity = Integer.parseInt(splitted[2]);
+                            } catch (NumberFormatException e){
+                                System.out.println("Bad input format!");
+                                return;
+                            }
+                            if (quantity > 0) {
+                                String itemName = splitted[1];
+                                Item itemToAdd = null;
+
+                                for (Item item : player.getCurrentRoom().getItemsInRoom().keySet()) {
+                                    if (item.getName().trim().equalsIgnoreCase(itemName)) {
+                                        itemToAdd = item;
+                                        break;
+                                    }
+                                }
+                                if (itemToAdd != null) {
+                                    player.putInBackpack(itemToAdd, quantity);
+                                } else {
+                                    System.out.println("No item here!");
+                                }
+                            } else {
+                                System.out.println("Quantity must be grater than 0!");
+                            }
                         }
+
                     } else if (splitted.length == 4) {
-
-                        int quantity = Integer.parseInt(splitted[3]);
-
+                        int quantity = 0;
+                        try{
+                            quantity = Integer.parseInt(splitted[3]);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Bad input format");
+                            return;
+                       }
                         if (quantity > 0) {
 
                             String[] itemName = new String[]{splitted[1] + " " + splitted[2]};
@@ -178,8 +225,13 @@ public class Main {
                             System.out.println("Quantity must be grater than 0!");
                         }
                     } else if (splitted.length == 5) {
-
-                        int quantity = Integer.parseInt(splitted[4]);
+                        int quantity = 0;
+                        try{
+                         quantity = Integer.parseInt(splitted[4]);
+                        } catch(NumberFormatException e){
+                            System.out.println("Bad input format!");
+                            return;
+                        }
                         if (quantity > 0) {
 
                             String[] itemName = new String[]{splitted[1] + " " + splitted[2] + " " + splitted[3]};
@@ -199,10 +251,9 @@ public class Main {
                         } else {
                             System.out.println("Quantity must be grater than 0!");
                         }
-                    }
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid quantity format. Please enter a valid number");
-                }
+                    } else {
+                        System.out.println("Bad input command! Correct format is: add + item name + quantity");
+                    } // Komenda używania przedmiotów
             } else if (splitted[0].equals("use") && splitted.length <= 5){
                 try {
                     if (splitted.length == 3) {
@@ -220,7 +271,19 @@ public class Main {
                                 }
                             }
                             if (itemToUse != null) {
+                                if (splitted[1].equals("breathalyser")) {
+                                    player.getDrunkLevel();
+                                } else {
+                                    if(splitted[1].equals("key") && splitted[2].equals("1") && player.getCurrentRoom().getNextRoom("east").getName().equals("Hall")){
+                                    System.out.println("You used key on the door...It works! You can pass now.");
+                                    player.getCurrentRoom().getNextRoom("east").roomIsLocked = false;
+                                    }
+                                    if(splitted[1].equals("vodka") ){
+                                    player.increaseDrunkLevel(0.5);
+
+                                }
                                 player.useItemFromBackpack(itemToUse, quantity);
+                                }
                             } else {
                                 System.out.println("No item in your backpack!");
                             }
@@ -293,8 +356,8 @@ public class Main {
         commandList.add("check backpack - check items inside your backpack ");
         commandList.add("add (item name and quantity) - put item in backpack");
         commandList.add("use (item name and quantity)  - you use item which you found");
-        commandList.add("check % - check your drunk level");
-        commandList.add("talk to - start conversation");
+        commandList.add("call taxi - you can call taxi to get home");
+        commandList.add("talk to (NPC name) - start conversation");
         commandList.add("get description - to show description of current room");
         commandList.add("yes - you accept");
         commandList.add("no - you don't accept");

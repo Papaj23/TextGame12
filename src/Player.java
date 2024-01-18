@@ -53,23 +53,30 @@ public class Player {
 
     public boolean move(String command) {
         Room nextRoom = this.currentRoom.getNextRoom(command);
+
         if (nextRoom != null) {
-            this.currentRoom = nextRoom;
-            getCurrentRoomDescription();
-            System.out.println("\n");
-            currentRoom.getItemsList();
-            System.out.println("\n");
-            showPossibleWays();
+            if (!nextRoom.roomIsLocked) {
+                this.currentRoom = nextRoom;
+                getCurrentRoomDescription();
+            } else {
+                System.out.println("The door is locked! You need a key to unlock it.");
+            }
         } else {
             System.out.println("You can't go this way!");
-
         }
+
         return false;
     }
+
 
     public double getDrunkLevel() {
 
         System.out.println(name + " your drunk level is: " + drunkLevel);
+        return drunkLevel;
+    }
+
+    public double increaseDrunkLevel(double vol){
+        drunkLevel += vol;
         return drunkLevel;
     }
 
@@ -108,11 +115,17 @@ public class Player {
         currentRoom.getItemsList();
     }
 
+
     public void talkTo(Character NPC) {
-        System.out.println("You talk to: ");
-        NPC.startTalk();
+        if (!NPC.talkedTo) {
+            NPC.startConversation();
+            NPC.conversation();
+            NPC.endConversation();
+        } else {
+            System.out.println("You have already talked to this character!");
         }
     }
+}
 
 
 

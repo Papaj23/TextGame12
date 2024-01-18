@@ -3,11 +3,13 @@ public class Character implements Talk {
     private String name;
     private Room room;
     private String description;
-    boolean talkedTo = false;
+    boolean talkedTo;
+
 
     public Character(String name, String description){
         this.name = name;
         this.description = description;
+        this.talkedTo = false;
     }
 
     public String getName() {
@@ -17,9 +19,20 @@ public class Character implements Talk {
         return description;
     }
 
+    @Override
+    public void startConversation() {
 
-    public void startTalk(){
-        System.out.println("conversation started");
+    }
+
+    @Override
+    public void conversation() {
+
+
+    }
+
+    @Override
+    public void endConversation() {
+        talkedTo = true;
 
     }
 }
